@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+/*
+  Design tokens — Design.md Section 2 (locked palette) and Section 3 (typography).
+
+  The palette is closed: Broken White, Sky Blue, Deep Charcoal, Warm Yellow.
+  The only additions below are same-hue derivations of Deep Charcoal (slate family)
+  used for muted text and hairline borders, plus a darkened Sky Blue for small text.
+  No new hues, no gradients. There is deliberately no dark theme — Design.md Section 1
+  rules out the dark aesthetic, so the page always renders on Broken White.
+*/
+
+@theme {
+  /* --- Surfaces --- */
+  --color-canvas: #faf9f6; /* Broken White — page background */
+  --color-surface: #ffffff; /* clean white cards, Design.md Section 6 */
+
+  /* --- Text (Deep Charcoal family, never pure black) --- */
+  --color-ink: #1e293b; /* headlines, body */
+  --color-ink-muted: #64748b; /* secondary text, labels */
+  --color-ink-faint: #94a3b8; /* captions, disabled */
+
+  /* --- Borders --- */
+  --color-line: #e2e8f0; /* subtle card borders */
+  --color-line-strong: #cbd5e1; /* inputs, dividers that need presence */
+
+  /* --- Sky Blue accent --- */
+  --color-accent: #0ea5e9; /* fills: CTA buttons, active states */
+  --color-accent-soft: #38bdf8; /* hover/lighter fills */
+  --color-accent-wash: #e0f2fe; /* tinted backgrounds, chart bands */
+  --color-accent-ink: #0369a1; /* small text and links (see contrast note) */
+
+  /*
+    Contrast, verified against Design.md Section 2's open question:
+      #0EA5E9 on #FAF9F6      = 2.6:1  -> fails; never use for text
+      white on #0EA5E9        = 2.8:1  -> fails; do NOT use white button labels
+      #1E293B on #0EA5E9      = 5.3:1  -> passes AA; this is the CTA label color
+      #0369A1 on #FAF9F6      = 5.6:1  -> passes AA; this is the link color
+    So Sky Blue stays a fill color with charcoal labels, and small blue text
+    uses the darkened variant.
+  */
+  --color-on-accent: #1e293b;
+
+  /* --- Warm Yellow, micro-accent only (badges, unread dots, one chart series) --- */
+  --color-highlight: #fbbf24;
+  --color-highlight-wash: #fef3c7;
+  --color-on-highlight: #1e293b;
+
+  /* --- Typography --- */
+  /* Heading is Plus Jakarta Sans as an interim stand-in; swapping to Satoshi
+     means changing only the font loader in app/layout.tsx. */
+  --font-heading: var(--font-heading-face), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Radii — restrained on purpose. Design.md Section 9 rejects pill-shaped
+     components; nothing in the UI uses a fully rounded radius except avatars. --- */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+}
+
+html {
+  background-color: var(--color-canvas);
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Motion budget — Design.md Section 8 allows hover, filter, button and loading
+   states only. Anything longer than this belongs to an effect we do not ship. */
+@media (prefers-reduced-motion: no-preference) {
+  a,
+  button {
+    transition:
+      color 150ms ease,
+      background-color 150ms ease,
+      border-color 150ms ease;
+  }
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-accent-ink);
+  outline-offset: 2px;
+}

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets: ignore every .env variant, keep only the placeholder template.
+.env
+.env.*
+!.env.example
