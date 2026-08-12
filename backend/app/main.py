@@ -11,6 +11,15 @@ from sqlalchemy import text
 
 from app.core.config import settings
 from app.db.session import engine
+from app.routers import (
+    auth,
+    categories,
+    chatbot,
+    dashboard,
+    inquiries,
+    products,
+    uploads,
+)
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
 
@@ -21,6 +30,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(auth.router)
+app.include_router(categories.router)
+app.include_router(products.router)
+app.include_router(inquiries.router)
+app.include_router(uploads.router)
+app.include_router(dashboard.router)
+app.include_router(chatbot.router)
 
 
 @app.get("/health")

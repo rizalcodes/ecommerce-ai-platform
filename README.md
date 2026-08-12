@@ -42,6 +42,15 @@ Database migrations (run from `backend/`):
 Alembic reads `DATABASE_URL` through `app/core/config.py`; `alembic.ini` holds no
 credentials.
 
+Admin accounts are not self-registerable — `/auth/register` only creates sellers.
+Bootstrap the first admin with:
+
+```bash
+.venv/Scripts/python -m scripts.create_admin --email you@example.com --name "Your Name"
+```
+
+Interactive API docs are at http://localhost:8000/docs.
+
 ## Frontend
 
 ```bash
@@ -59,8 +68,8 @@ Runs on http://localhost:3000.
 |---|---|---|
 | M1 | Project scaffold, design tokens, DB connection | done |
 | M2 | Database schema — all tables in Schema.md Section 2 | done |
-| M3 | Backend API — auth, catalog, inquiries, dashboards, chatbot | next |
-| M4 | Realistic seed data + product images in Supabase Storage | |
+| M3 | Backend API — auth, catalog, inquiries, dashboards, chatbot | done |
+| M4 | Realistic seed data + product images in Supabase Storage | next |
 | M5 | Frontend — public pages, auth, seller area, admin area | |
 | M6 | Design pass against Design.md, anti-slop audit | |
 
