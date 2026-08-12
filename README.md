@@ -51,6 +51,26 @@ Bootstrap the first admin with:
 
 Interactive API docs are at http://localhost:8000/docs.
 
+## Seed data
+
+```bash
+.venv/Scripts/python -m scripts.seed --reset       # 12 categories, 8 sellers, 80 products
+.venv/Scripts/python -m scripts.seed --no-images   # same, without photo sourcing
+```
+
+Product photos are sourced from Openverse under CC0 / Public Domain Mark only —
+those two licences carry no attribution requirement, and the schema has nowhere
+to store a credit line.
+
+Downloads are cached in `.seed_cache/`, and `.seed_cache/manifest.json` records
+which photos belong to which product. Both are gitignored, so a fresh clone
+re-sources photos on its first run and reuses them afterwards. If the image API
+refuses a request, the seed stops searching and falls back to whatever the
+manifest already holds rather than retrying into a block.
+
+Seeded logins (`admin@aicommerce.example.com` and eight sellers) all use
+`demo-password-2026`. Change them before any public deployment.
+
 ## Frontend
 
 ```bash
@@ -69,8 +89,8 @@ Runs on http://localhost:3000.
 | M1 | Project scaffold, design tokens, DB connection | done |
 | M2 | Database schema — all tables in Schema.md Section 2 | done |
 | M3 | Backend API — auth, catalog, inquiries, dashboards, chatbot | done |
-| M4 | Realistic seed data + product images in Supabase Storage | next |
-| M5 | Frontend — public pages, auth, seller area, admin area | |
+| M4 | Realistic seed data + product images in Supabase Storage | done |
+| M5 | Frontend — public pages, auth, seller area, admin area | next |
 | M6 | Design pass against Design.md, anti-slop audit | |
 
 ## Notes for contributors

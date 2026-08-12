@@ -87,6 +87,47 @@ def upload_image(*, seller_id: uuid.UUID, filename: str, content: bytes, content
     return public_url(path)
 
 
+def list_objects(prefix: str, *, limit: int = 1000) -> list[str]:
+    """Object paths under a prefix. Returns [] when storage is unconfigured."""
+    if not is_configured():
+        return []
+    try:
+        response = httpx.post(
+            f"{settings.supabase_url}/storage/v1/object/list/{settings.supabase_storage_bucket}",
+            headers={**_headers(), "Content-Type": "application/json"},
+            json={"prefix": prefix, "limit": limit},
+            timeout=30,
+        )
+        response.raise_for_status()
+    except httpx.HTTPError:
+        return []
+
+    items = response.json()
+    # A folder entry has no id; only real objects are returned.
+    return [
+        f"{prefix}/{item['name']}" if prefix else item["name"]
+        for item in items
+        if item.get("id")
+    ]
+
+
+def delete_objects(paths: list[str]) -> int:
+    """Bulk delete. Returns how many paths were submitted."""
+    if not is_configured() or not paths:
+        return 0
+    try:
+        httpx.request(
+            "DELETE",
+            f"{settings.supabase_url}/storage/v1/object/{settings.supabase_storage_bucket}",
+            headers={**_headers(), "Content-Type": "application/json"},
+            json={"prefixes": paths},
+            timeout=60,
+        )
+    except httpx.HTTPError:
+        return 0
+    return len(paths)
+
+
 def delete_object(path: str) -> None:
     """Best-effort delete. Callers treat failure as non-fatal — an orphaned image
     is cheaper than a failed product update."""
