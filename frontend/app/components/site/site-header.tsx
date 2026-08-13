@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ButtonLink } from "@/app/components/ui/button";
+import { AuthNav } from "@/app/components/site/auth-nav";
 
 /*
   Header — Design.md Section 1: Linear-style restraint. A wordmark, one search,
@@ -36,9 +36,7 @@ export function SiteHeader() {
           >
             Browse
           </Link>
-          <ButtonLink href="/login" variant="secondary" size="sm">
-            Seller sign in
-          </ButtonLink>
+          <AuthNav />
         </nav>
       </div>
     </header>
