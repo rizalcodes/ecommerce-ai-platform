@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+
+import { AssistantWidget } from "@/app/components/chatbot/assistant-widget";
 import "./globals.css";
 
 /*
@@ -34,9 +36,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${headingFace.variable} ${bodyFace.variable} h-full`}
     >
-      {/* The AI assistant widget mounts here in M5 (Architecture.md Section 2)
-          so it persists across every route instead of remounting per page. */}
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {children}
+        {/* Mounted once in the root layout (Architecture.md Section 2) so it
+            persists across every route instead of remounting per page. */}
+        <AssistantWidget />
+      </body>
     </html>
   );
 }

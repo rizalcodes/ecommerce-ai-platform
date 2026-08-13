@@ -1,5 +1,6 @@
 """User and seller-profile response schemas."""
 
+import datetime as dt
 import uuid
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -58,3 +59,21 @@ class UserSummary(BaseModel):
     name: str
     store_name: str | None = None
     avatar_url: str | None = None
+    # Public on purpose: it powers the WhatsApp quick-contact shortcut on the
+    # product page (PRD.md 5.3). Nothing else from the account is exposed here.
+    whatsapp_number: str | None = None
+
+
+class SellerPublic(BaseModel):
+    """Storefront profile for /sellers/[id]."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    store_name: str
+    store_description: str | None = None
+    whatsapp_number: str | None = None
+    avatar_url: str | None = None
+    joined_at: dt.datetime
+    product_count: int

@@ -69,6 +69,7 @@ class ProductListItem(BaseModel):
                 name=product.seller.name,
                 store_name=profile.store_name if profile else None,
                 avatar_url=profile.avatar_url if profile else None,
+                whatsapp_number=profile.whatsapp_number if profile else None,
             ),
         )
 

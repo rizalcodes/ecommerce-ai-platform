@@ -18,6 +18,8 @@ from app.routers import (
     dashboard,
     inquiries,
     products,
+    sellers,
+    stats,
     uploads,
 )
 
@@ -35,6 +37,8 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(categories.router)
 app.include_router(products.router)
+app.include_router(sellers.router)
+app.include_router(stats.router)
 app.include_router(inquiries.router)
 app.include_router(uploads.router)
 app.include_router(dashboard.router)
