@@ -76,3 +76,90 @@ export type PlatformStats = {
   total_sellers: number;
   total_categories: number;
 };
+
+export type InquiryStatus = "new" | "contacted" | "closed";
+
+export type Inquiry = {
+  id: string;
+  product_id: string;
+  buyer_name: string;
+  buyer_contact: string;
+  message: string | null;
+  status: InquiryStatus;
+  created_at: string;
+  updated_at: string;
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    main_image_url: string | null;
+  } | null;
+};
+
+export type Notification = {
+  id: string;
+  type: string;
+  reference_id: string | null;
+  is_read: boolean;
+  created_at: string;
+};
+
+export type ProductMetric = {
+  product_id: string;
+  name: string;
+  slug: string;
+  main_image_url: string | null;
+  value: number;
+};
+
+export type SellerDashboard = {
+  active_products: number;
+  inactive_products: number;
+  total_inquiries: number;
+  inquiries_by_status: { new: number; contacted: number; closed: number };
+  unread_notifications: number;
+  most_viewed_products: ProductMetric[];
+  most_inquired_products: ProductMetric[];
+  period_days: number;
+};
+
+export type AdminDashboard = {
+  total_sellers: number;
+  total_products: number;
+  total_categories: number;
+  total_inquiries: number;
+  inquiries_in_period: number;
+  new_listings_in_period: number;
+  category_performance: {
+    category_id: string;
+    name: string;
+    slug: string;
+    product_count: number;
+    inquiry_count: number;
+  }[];
+  seller_performance: {
+    seller_id: string;
+    name: string;
+    store_name: string | null;
+    product_count: number;
+    inquiry_count: number;
+  }[];
+  trends: { week_start: string; new_listings: number; inquiries: number }[];
+  top_viewed_products: ProductMetric[];
+  period_days: number;
+};
+
+export type CurrentUser = {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  is_active: boolean;
+  roles: string[];
+  seller_profile: {
+    store_name: string;
+    store_description: string | null;
+    whatsapp_number: string | null;
+    avatar_url: string | null;
+  } | null;
+};

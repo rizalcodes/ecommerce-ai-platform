@@ -15,7 +15,15 @@ class SellerProfileRead(BaseModel):
     avatar_url: str | None = None
 
 
-class SellerProfileUpdate(BaseModel):
+class AccountUpdate(BaseModel):
+    """Self-service update for the signed-in account.
+
+    Deliberately holds no id, role or is_active field: those are not the
+    account holder's to change.
+    """
+
+    name: str | None = Field(default=None, min_length=2, max_length=150)
+    phone: str | None = Field(default=None, max_length=30)
     store_name: str | None = Field(default=None, min_length=2, max_length=150)
     store_description: str | None = Field(default=None, max_length=2000)
     whatsapp_number: str | None = Field(default=None, max_length=30)

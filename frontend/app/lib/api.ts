@@ -66,7 +66,32 @@ async function request<T>(
   return payload as T;
 }
 
+/** Multipart upload. Kept separate because the body must not be JSON-encoded
+    and the browser has to set its own multipart boundary. */
+async function upload<T>(path: string, file: File, options: RequestOptions = {}): Promise<T> {
+  const headers: Record<string, string> = { Accept: "application/json" };
+  const token = options.token ?? getTokenFromBrowser();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const body = new FormData();
+  body.append("file", file);
+
+  const response = await fetch(`${BASE_URL}${path}`, { method: "POST", headers, body });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail =
+      payload && typeof payload === "object" && "detail" in payload
+        ? String((payload as { detail: unknown }).detail)
+        : response.statusText;
+    throw new ApiError(response.status, detail, payload);
+  }
+
+  return payload as T;
+}
+
 export const api = {
+  upload,
   get: <T>(path: string, options?: RequestOptions) => request<T>("GET", path, undefined, options),
   post: <T>(path: string, body?: unknown, options?: RequestOptions) =>
     request<T>("POST", path, body, options),

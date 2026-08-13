@@ -11,7 +11,7 @@ from app.core.security import create_access_token, hash_password, verify_passwor
 from app.db.session import get_db
 from app.models import Role, SellerProfile, User
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
-from app.schemas.user import UserRead
+from app.schemas.user import AccountUpdate, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -85,4 +85,40 @@ def login(payload: LoginRequest, db: DbSession) -> TokenResponse:
 
 @router.get("/me", response_model=UserRead)
 def me(user: CurrentUser) -> UserRead:
+    return UserRead.from_user(user)
+
+
+@router.patch("/me", response_model=UserRead)
+def update_me(payload: AccountUpdate, user: CurrentUser, db: DbSession) -> UserRead:
+    """Update the signed-in account and, for sellers, its storefront profile.
+
+    Scoped to the caller by construction — the user comes from the verified JWT,
+    so there is no id in the payload that could point somewhere else.
+    """
+    data = payload.model_dump(exclude_unset=True)
+
+    for field in ("name", "phone"):
+        if field in data and data[field] is not None:
+            setattr(user, field, data[field])
+
+    profile_fields = {
+        key: value
+        for key, value in data.items()
+        if key in {"store_name", "store_description", "whatsapp_number", "avatar_url"}
+    }
+    if profile_fields:
+        if user.seller_profile is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This account has no storefront to update",
+            )
+        for key, value in profile_fields.items():
+            # store_name is NOT NULL, so an explicit null is rejected rather than
+            # written; the other fields are nullable and may be cleared.
+            if key == "store_name" and not value:
+                continue
+            setattr(user.seller_profile, key, value)
+
+    db.commit()
+    db.refresh(user)
     return UserRead.from_user(user)
