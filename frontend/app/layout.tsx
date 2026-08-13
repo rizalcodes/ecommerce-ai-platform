@@ -5,11 +5,15 @@ import { AssistantWidget } from "@/app/components/chatbot/assistant-widget";
 import "./globals.css";
 
 /*
-  Typography — Design.md Section 3.
-  Body is Inter (locked). Heading is Satoshi (locked), but Satoshi ships via
-  Fontshare rather than Google Fonts, so Plus Jakarta Sans stands in until the
-  final font files land. Only this loader changes when Satoshi is dropped in;
-  every component reads --font-heading.
+  Typography — Design.md Section 3, now locked: Plus Jakarta Sans headings over
+  an Inter body.
+
+  Satoshi was the first pick. Its Fontshare EULA grants free commercial use but
+  clause 02 forbids transmitting the font over the internet for font serving
+  without written consent, which is what self-hosting a WOFF2 does; the licensed
+  route is a request to Fontshare's CDN on every page load. Plus Jakarta Sans is
+  an accepted heading face in the same section, is under the SIL Open Font
+  License, and next/font self-hosts it at build time with no third-party request.
 */
 const headingFace = Plus_Jakarta_Sans({
   variable: "--font-heading-face",
@@ -24,10 +28,13 @@ const bodyFace = Inter({
   display: "swap",
 });
 
+// The tab should say what the header says. "AI Commerce Platform" was the
+// working title and no longer matches the wordmark on the page.
 export const metadata: Metadata = {
-  title: "AI Commerce Platform",
+  title: "PasarKita",
   description:
-    "A commerce platform with an AI product assistant and per-role business dashboards.",
+    "Browse what small Malaysian sellers have in stock and message them directly. "
+    + "Ask the product assistant, and it answers only from real listings.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

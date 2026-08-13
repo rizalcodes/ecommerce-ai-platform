@@ -1,6 +1,6 @@
 # Design.md — AI-Powered Commerce Platform (v1)
 
-**Status:** Final direction locked — typography final pick pending
+**Status:** Final direction locked — typography locked in M6 (see Section 3)
 **Positioning:** "Premium AI Commerce Platform"
 
 ---
@@ -48,6 +48,8 @@ Usage: micro-accent only — badges, notifications, highlights
 ### Accessibility note
 Check contrast of `#0EA5E9` against `#FAF9F6` when used for small text/links — safe for large buttons, may need darkening for small link text. Verify at implementation time.
 
+**Verified in M6.** `#0EA5E9` is 2.6:1 on Broken White and 2.8:1 behind white labels: it is a fill only, never text, and its buttons take Deep Charcoal labels (5.3:1). Small blue text uses a darkened `#0369A1` (5.6:1). The supporting greys were measured in the same pass and two failed, so the derived scale moved: secondary text to `#475569` (7.2:1), caption text to `#64748B` (4.5:1), and control borders to `#7F8EA3` (3.2:1, WCAG 1.4.11). Card edges stay at `#E2E8F0` — decorative grouping, not the boundary of a control. Full table in `frontend/app/globals.css`.
+
 ---
 
 ## 3. Typography
@@ -60,7 +62,11 @@ Requirements: personality, modern, slightly warm, bold headlines
 **Body:** Inter / IBM Plex Sans
 Requirements: readable, neutral, professional
 
-**Status:** Final pick still pending — reference styles.refero.design and bestfreefonts.com before locking. Reference: Summertime (Pinterest) for bold, confident headline energy.
+**Status: locked (M6).** Heading **Plus Jakarta Sans**, body **Inter**, both self-hosted by `next/font` at build time.
+
+Satoshi was the first choice. Its Fontshare EULA grants free personal and commercial use, but clause 02 forbids transmitting the font over the internet "in font serving … without the prior written consent of the Licensor", and the sanctioned web route is a request to Fontshare's own CDN on every page load. General Sans is the same foundry and the same terms. Plus Jakarta Sans is listed here as an acceptable heading face, is under the SIL Open Font License, and ships with no third-party runtime dependency — so it is the pick, not a fallback.
+
+Reference for headline energy remains Summertime (Pinterest).
 
 ---
 

@@ -6,11 +6,15 @@ import { AuthNav } from "@/app/components/site/auth-nav";
   Header — Design.md Section 1: Linear-style restraint. A wordmark, one search,
   the two destinations that matter, and a way in. No mega menu, no announcement
   bar, no gradient.
+
+  The background is opaque. It was a 95% canvas with a 2px backdrop blur, which
+  is glassmorphism in miniature and Design.md Section 6 rules it out; a solid bar
+  with one hairline under it does the same job without the effect.
 */
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-canvas/95 backdrop-blur-[2px]">
+    <header className="sticky top-0 z-40 border-b border-line bg-canvas">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-6 px-4 sm:px-6">
         <Link href="/" className="shrink-0 text-lg font-bold tracking-tight text-ink">
           Pasar<span className="text-accent-ink">Kita</span>

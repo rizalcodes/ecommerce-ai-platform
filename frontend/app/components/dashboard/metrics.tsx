@@ -9,8 +9,15 @@ import { formatCount } from "@/app/lib/format";
 
   No chart library. Design.md Section 6 rules out default Recharts blue, and the
   surest way to honour that is to draw the few shapes these dashboards need with
-  the brand tokens directly. Sky Blue carries the primary series, Warm Yellow is
-  reserved for a single comparison series, and Charcoal for anything neutral.
+  the brand tokens directly. Sky Blue carries the primary series and Charcoal the
+  comparison; Warm Yellow stays a micro-accent, marking one state rather than
+  carrying a series.
+
+  Sky Blue measures 2.6:1 against the tracks these bars sit on, short of the 3:1
+  WCAG asks of a graphical object. Every bar here is therefore redundant: the
+  number it encodes is printed in text beside it, and the trend chart carries a
+  screen-reader table. The bars rank at a glance; the text is what states the
+  value.
 */
 
 export function StatCard({
@@ -171,8 +178,14 @@ export function StatusBar({
 
     Drawn as plain divs on a shared baseline rather than a chart component: two
     series over a dozen weeks needs a scale, a baseline and bars, and nothing
-    else. Sky Blue is the primary series, Warm Yellow the comparison, which is
-    the one place Design.md Section 2 allows the yellow to carry data. */
+    else.
+
+    Sky Blue and Deep Charcoal carry the two series. Warm Yellow was the second
+    series first, and it measures 1.6:1 against the card behind it — a bar that
+    pale is decoration, not data. Design.md Section 6 names Charcoal as a chart
+    colour and Section 2 keeps the yellow a micro-accent, so this is where both
+    belong. The bars are also transcribed into a table for screen readers, since
+    a hover tooltip is not a way to read a number. */
 export function TrendChart({
   points,
   series,
@@ -185,31 +198,42 @@ export function TrendChart({
   }
 
   const max = Math.max(1, ...points.flatMap((point) => point.values));
+  const totals: [number, number] = [
+    points.reduce((sum, point) => sum + point.values[0], 0),
+    points.reduce((sum, point) => sum + point.values[1], 0),
+  ];
 
   return (
     <div className="px-5 py-4">
-      <div className="flex items-center gap-5">
-        <span className="flex items-center gap-1.5 text-xs text-ink-muted">
-          <span className="size-2 rounded-sm bg-accent" aria-hidden />
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <span className="flex items-baseline gap-1.5 text-xs text-ink-muted">
+          <span className="size-2 translate-y-px rounded-sm bg-accent" aria-hidden />
           {series[0]}
+          <span className="font-medium tabular-nums text-ink">{formatCount(totals[0])}</span>
         </span>
-        <span className="flex items-center gap-1.5 text-xs text-ink-muted">
-          <span className="size-2 rounded-sm bg-highlight" aria-hidden />
+        <span className="flex items-baseline gap-1.5 text-xs text-ink-muted">
+          <span className="size-2 translate-y-px rounded-sm bg-ink" aria-hidden />
           {series[1]}
+          <span className="font-medium tabular-nums text-ink">{formatCount(totals[1])}</span>
         </span>
-        <span className="ml-auto text-xs tabular-nums text-ink-faint">peak {formatCount(max)}</span>
+        <span className="ml-auto text-xs tabular-nums text-ink-faint">
+          busiest week {formatCount(max)}
+        </span>
       </div>
 
-      <div className="mt-4 flex h-40 items-end gap-2 border-b border-line-strong">
+      <div className="mt-4 flex h-40 items-end gap-2 border-b border-line-strong" aria-hidden>
         {points.map((point) => (
-          <div key={point.key} className="flex h-full min-w-0 flex-1 items-end justify-center gap-0.5">
+          <div
+            key={point.key}
+            className="flex h-full min-w-0 flex-1 items-end justify-center gap-0.5"
+          >
             <div
               className="w-1/2 max-w-4 rounded-t-sm bg-accent"
               style={{ height: `${(point.values[0] / max) * 100}%` }}
               title={`${point.label} — ${series[0]}: ${point.values[0]}`}
             />
             <div
-              className="w-1/2 max-w-4 rounded-t-sm bg-highlight"
+              className="w-1/2 max-w-4 rounded-t-sm bg-ink"
               style={{ height: `${(point.values[1] / max) * 100}%` }}
               title={`${point.label} — ${series[1]}: ${point.values[1]}`}
             />
@@ -217,7 +241,7 @@ export function TrendChart({
         ))}
       </div>
 
-      <div className="mt-2 flex gap-2">
+      <div className="mt-2 flex gap-2" aria-hidden>
         {points.map((point) => (
           <span
             key={point.key}
@@ -227,6 +251,28 @@ export function TrendChart({
           </span>
         ))}
       </div>
+
+      <table className="sr-only">
+        <caption>
+          {series[0]} and {series[1]} per week
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Week beginning</th>
+            <th scope="col">{series[0]}</th>
+            <th scope="col">{series[1]}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {points.map((point) => (
+            <tr key={point.key}>
+              <th scope="row">{point.label}</th>
+              <td>{point.values[0]}</td>
+              <td>{point.values[1]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

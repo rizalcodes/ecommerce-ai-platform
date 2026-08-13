@@ -17,12 +17,12 @@
 
   /* --- Text (Deep Charcoal family, never pure black) --- */
   --color-ink: #1e293b; /* headlines, body */
-  --color-ink-muted: #64748b; /* secondary text, labels */
-  --color-ink-faint: #94a3b8; /* captions, disabled */
+  --color-ink-muted: #475569; /* secondary text, labels */
+  --color-ink-faint: #64748b; /* captions, metadata */
 
   /* --- Borders --- */
-  --color-line: #e2e8f0; /* subtle card borders */
-  --color-line-strong: #cbd5e1; /* inputs, dividers that need presence */
+  --color-line: #e2e8f0; /* card edges and dividers — decorative separation */
+  --color-line-strong: #7f8ea3; /* the visible edge of a control */
 
   /* --- Sky Blue accent --- */
   --color-accent: #0ea5e9; /* fills: CTA buttons, active states */
@@ -31,13 +31,27 @@
   --color-accent-ink: #0369a1; /* small text and links (see contrast note) */
 
   /*
-    Contrast, verified against Design.md Section 2's open question:
-      #0EA5E9 on #FAF9F6      = 2.6:1  -> fails; never use for text
-      white on #0EA5E9        = 2.8:1  -> fails; do NOT use white button labels
-      #1E293B on #0EA5E9      = 5.3:1  -> passes AA; this is the CTA label color
-      #0369A1 on #FAF9F6      = 5.6:1  -> passes AA; this is the link color
-    So Sky Blue stays a fill color with charcoal labels, and small blue text
-    uses the darkened variant.
+    Contrast. Design.md Section 2 asks for the blues to be checked at
+    implementation time; the greys were measured in the same pass and two of them
+    had to move. Every ratio below is against the lighter of the two backgrounds
+    text actually sits on (#FAF9F6 canvas, #FFFFFF card).
+
+    Text, needs 4.5:1
+      #1E293B ink            13.9:1  pass
+      #475569 ink-muted       7.2:1  pass   (was #64748B at 4.5:1, no margin)
+      #64748B ink-faint       4.5:1  pass   (was #94A3B8 at 2.4:1, FAILED)
+      #0369A1 accent-ink      5.6:1  pass   links and small blue text
+      #0EA5E9 accent          2.6:1  FAIL   never use for text
+      #FFFFFF on #0EA5E9      2.8:1  FAIL   never use white button labels
+      #1E293B on #0EA5E9      5.3:1  pass   this is the CTA label color
+
+    Controls, needs 3:1 (WCAG 1.4.11)
+      #7F8EA3 line-strong     3.2:1  pass   (was #CBD5E1 at 1.4:1, FAILED)
+      #0369A1 focus ring      5.6:1  pass
+
+    #E2E8F0 line stays at 1.2:1 on purpose. It draws card edges and dividers,
+    which are decorative grouping rather than the boundary of a control, and
+    1.4.11 does not apply to them. Anything a user operates uses line-strong.
   */
   --color-on-accent: #1e293b;
 
@@ -46,9 +60,12 @@
   --color-highlight-wash: #fef3c7;
   --color-on-highlight: #1e293b;
 
-  /* --- Typography --- */
-  /* Heading is Plus Jakarta Sans as an interim stand-in; swapping to Satoshi
-     means changing only the font loader in app/layout.tsx. */
+  /* --- Typography — locked. Plus Jakarta Sans headings, Inter body.
+     Design.md Section 3 lists General Sans, Satoshi and Plus Jakarta Sans as
+     acceptable heading faces. Satoshi and General Sans are Fontshare fonts whose
+     EULA reserves web font serving to Fontshare's own CDN, so shipping either
+     means a third-party request on every page load. Plus Jakarta Sans is under
+     the SIL Open Font License and next/font self-hosts it at build time. --- */
   --font-heading: var(--font-heading-face), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
 
