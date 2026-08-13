@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     supabase_service_key: str = ""
     supabase_storage_bucket: str = "product-images"
     gemini_api_key: str = ""
+    # Configurable because Google retires model names: the first build pinned
+    # gemini-2.0-flash, which returned 404 NOT_FOUND once it was withdrawn.
+    # Changing models should be an env edit, not a code change.
+    gemini_model: str = "gemini-3.5-flash"
     resend_api_key: str = ""
     resend_from_email: str = ""
 

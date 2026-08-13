@@ -132,7 +132,7 @@ SELLERS = [
 PRODUCTS = [
     # --- TechHaus KL (16) ---
     ("techhaus", "Computers & Accessories", "14-inch Ultrabook, 16GB RAM / 512GB SSD", "3499.00", 6, "active",
-     "Thin aluminium body, about 1.3kg. Handles a dozen browser tabs and a video call without the fan spinning up. Charger and sleeve included.",
+     "A thin aluminium laptop, about 1.3kg. Handles a dozen browser tabs and a video call without the fan spinning up. Charger and sleeve included.",
      ["laptop computer", "notebook laptop"]),
     ("techhaus", "Computers & Accessories", "27-inch QHD Monitor, 75Hz", "899.00", 11, "active",
      "2560x1440 IPS panel with a height-adjustable stand. Two HDMI ports and one DisplayPort. Good for split-screen work.",
