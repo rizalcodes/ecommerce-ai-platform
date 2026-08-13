@@ -19,6 +19,7 @@ from app.core.permissions import (
     SellerUser,
     require_permission,
 )
+from app.core.visibility import BUYER_VISIBLE
 from app.db.session import get_db
 from app.models import Category, Product, ProductImage, ProductStatus, User
 from app.schemas.common import Page
@@ -121,8 +122,9 @@ def list_products(
     limit: Annotated[int, Query(ge=1, le=100)] = 24,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> Page[ProductListItem]:
-    """Public catalogue. Inactive products are never exposed here."""
-    stmt = select(Product).where(Product.status == ProductStatus.active)
+    """Public catalogue. Inactive products, and the catalogues of suspended
+    sellers, are never exposed here."""
+    stmt = select(Product).where(*BUYER_VISIBLE)
     if seller_id is not None:
         stmt = stmt.where(Product.seller_id == seller_id)
     stmt = _apply_filters(
@@ -224,12 +226,13 @@ def _build_images(images) -> list[ProductImage]:
 @router.get("/{product_id}", response_model=ProductRead)
 def get_product(product_id: uuid.UUID, db: DbSession) -> ProductRead:
     product = db.scalars(
-        select(Product).where(Product.id == product_id).options(*_EAGER)
+        select(Product).where(Product.id == product_id, *BUYER_VISIBLE).options(*_EAGER)
     ).unique().one_or_none()
 
-    if product is None or product.status != ProductStatus.active:
-        # Inactive products are indistinguishable from missing ones publicly;
-        # the seller reads their own drafts through /products/mine.
+    if product is None:
+        # Inactive products, and products belonging to a suspended seller, are
+        # indistinguishable from missing ones publicly; the seller reads their
+        # own drafts through /products/mine.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
 
     return ProductRead.from_product(product)

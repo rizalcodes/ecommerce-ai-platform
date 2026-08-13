@@ -149,6 +149,20 @@ export type AdminDashboard = {
   period_days: number;
 };
 
+/** One account row in the admin account list. */
+export type AdminUserRow = {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  is_active: boolean;
+  roles: string[];
+  store_name: string | null;
+  product_count: number;
+  inquiry_count: number;
+  created_at: string;
+};
+
 export type CurrentUser = {
   id: string;
   email: string;

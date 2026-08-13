@@ -72,6 +72,31 @@ class UserSummary(BaseModel):
     whatsapp_number: str | None = None
 
 
+class AdminUserRow(BaseModel):
+    """One account as the admin account list shows it.
+
+    Carries the two counts the list needs beside each name so deactivating an
+    account is a decision made with its footprint visible, not blind.
+    """
+
+    id: uuid.UUID
+    email: EmailStr
+    name: str
+    phone: str | None = None
+    is_active: bool
+    roles: list[str]
+    store_name: str | None = None
+    product_count: int
+    inquiry_count: int
+    created_at: dt.datetime
+
+
+class UserStatusUpdate(BaseModel):
+    """The only field an admin may change on someone else's account."""
+
+    is_active: bool
+
+
 class SellerPublic(BaseModel):
     """Storefront profile for /sellers/[id]."""
 

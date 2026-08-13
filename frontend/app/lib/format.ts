@@ -28,6 +28,14 @@ export function formatMonthYear(iso: string): string {
   );
 }
 
+/** Axis label for a weekly bucket: "12 Aug". The year is already implied by the
+    reporting window shown above the chart. */
+export function formatWeek(iso: string): string {
+  return new Intl.DateTimeFormat("en-MY", { day: "numeric", month: "short" }).format(
+    new Date(iso),
+  );
+}
+
 /** Compact counts for stat tiles: 1200 -> "1,200". */
 export function formatCount(value: number): string {
   return new Intl.NumberFormat("en-MY").format(value);

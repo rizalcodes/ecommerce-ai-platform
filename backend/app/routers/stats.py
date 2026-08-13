@@ -15,8 +15,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.visibility import BUYER_VISIBLE
 from app.db.session import get_db
-from app.models import Category, Product, ProductStatus, SellerProfile
+from app.models import Category, Product, SellerProfile, User
 from app.schemas.stats import PlatformStats
 
 router = APIRouter(prefix="/stats", tags=["stats"])
@@ -27,10 +28,12 @@ DbSession = Annotated[Session, Depends(get_db)]
 @router.get("", response_model=PlatformStats)
 def platform_stats(db: DbSession) -> PlatformStats:
     return PlatformStats(
-        # Active only, so the strip matches what a shopper can actually browse.
-        total_products=db.scalar(
-            select(func.count(Product.id)).where(Product.status == ProductStatus.active)
+        # Browsable only, so the strip matches what a shopper can actually reach.
+        total_products=db.scalar(select(func.count(Product.id)).where(*BUYER_VISIBLE)) or 0,
+        total_sellers=db.scalar(
+            select(func.count(SellerProfile.user_id))
+            .join(User, User.id == SellerProfile.user_id)
+            .where(User.is_active.is_(True))
         ) or 0,
-        total_sellers=db.scalar(select(func.count(SellerProfile.user_id))) or 0,
         total_categories=db.scalar(select(func.count(Category.id))) or 0,
     )

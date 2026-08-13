@@ -17,11 +17,17 @@ type State<T> = {
   reload: () => void;
 };
 
+/** What one settled request produced, tagged with the request it answered. */
+type Settled<T> = { key: string; data: T | null; error: string | null };
+
 export function useApi<T>(path: string | null): State<T> {
-  const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [nonce, setNonce] = useState(0);
+  const [settled, setSettled] = useState<Settled<T> | null>(null);
+
+  // Changing the path or asking for a reload makes a new key, and "loading" is
+  // simply the key not having settled yet. Deriving it rather than storing it
+  // keeps every setState inside the async callbacks, where it belongs.
+  const key = `${nonce}:${path}`;
 
   const reload = useCallback(() => setNonce((value) => value + 1), []);
 
@@ -29,30 +35,37 @@ export function useApi<T>(path: string | null): State<T> {
     if (path === null) return;
 
     let cancelled = false;
-    setLoading(true);
-    setError(null);
 
     api
       .get<T>(path, { cache: "no-store" })
       .then((result) => {
-        if (!cancelled) setData(result);
+        if (!cancelled) setSettled({ key, data: result, error: null });
       })
       .catch((caught: unknown) => {
         if (cancelled) return;
-        setError(
-          caught instanceof ApiError ? caught.message : "Could not load this right now.",
-        );
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        setSettled({
+          key,
+          data: null,
+          error:
+            caught instanceof ApiError ? caught.message : "Could not load this right now.",
+        });
       });
 
     return () => {
       cancelled = true;
     };
-  }, [path, nonce]);
+  }, [path, key]);
 
-  return { data, error, loading, reload };
+  const current = settled?.key === key ? settled : null;
+
+  return {
+    // While a new request is in flight the previous result stays on screen, so
+    // changing a filter does not blank the page it is filtering.
+    data: current ? current.data : (settled?.data ?? null),
+    error: current?.error ?? null,
+    loading: current === null,
+    reload,
+  };
 }
 
 export function LoadingRows({ rows = 3 }: { rows?: number }) {

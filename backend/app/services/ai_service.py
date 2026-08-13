@@ -19,7 +19,8 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import settings
-from app.models import Category, Product, ProductStatus, User
+from app.core.visibility import BUYER_VISIBLE
+from app.models import Category, Product, User
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +104,8 @@ def extract_keywords(message: str) -> list[str]:
 def _base_query():
     return (
         select(Product)
-        .where(Product.status == ProductStatus.active)
+        # The assistant can only recommend what a buyer could then go and open.
+        .where(*BUYER_VISIBLE)
         .options(
             selectinload(Product.images),
             selectinload(Product.category),

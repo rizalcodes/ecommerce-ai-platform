@@ -10,12 +10,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from slugify import slugify
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from app.core.permissions import require_permission
+from app.core.visibility import BUYER_VISIBLE
 from app.db.session import get_db
-from app.models import Category, Product, ProductStatus, User
+from app.models import Category, Product, User
 from app.schemas.category import (
     CategoryCreate,
     CategoryRead,
@@ -47,16 +48,18 @@ def _unique_slug(db: Session, base: str, exclude_id: uuid.UUID | None = None) ->
 
 @router.get("", response_model=list[CategoryWithCount])
 def list_categories(db: DbSession) -> list[CategoryWithCount]:
-    """All categories with their active-product counts.
+    """All categories with the number of products a buyer can actually browse.
 
-    Counts only active products so the storefront never advertises a category
-    that leads to an empty grid.
+    Counts what the catalogue would return, so the storefront never advertises a
+    category that leads to an empty grid. Note that this is smaller than the
+    number of rows blocking a delete: the delete endpoint counts every product in
+    the category, and says so in its 409.
     """
     rows = db.execute(
         select(Category, func.count(Product.id))
         .outerjoin(
             Product,
-            (Product.category_id == Category.id) & (Product.status == ProductStatus.active),
+            (Product.category_id == Category.id) & and_(*BUYER_VISIBLE),
         )
         .group_by(Category.id)
         .order_by(Category.name)
@@ -81,9 +84,7 @@ def get_category(slug: str, db: DbSession) -> CategoryWithCount:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
 
     count = db.scalar(
-        select(func.count(Product.id)).where(
-            Product.category_id == category.id, Product.status == ProductStatus.active
-        )
+        select(func.count(Product.id)).where(Product.category_id == category.id, *BUYER_VISIBLE)
     )
     return CategoryWithCount(
         id=category.id,

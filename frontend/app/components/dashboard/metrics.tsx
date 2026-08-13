@@ -167,6 +167,70 @@ export function StatusBar({
   );
 }
 
+/** Two weekly series side by side — new listings against inquiries.
+
+    Drawn as plain divs on a shared baseline rather than a chart component: two
+    series over a dozen weeks needs a scale, a baseline and bars, and nothing
+    else. Sky Blue is the primary series, Warm Yellow the comparison, which is
+    the one place Design.md Section 2 allows the yellow to carry data. */
+export function TrendChart({
+  points,
+  series,
+}: {
+  points: { key: string; label: string; values: [number, number] }[];
+  series: [string, string];
+}) {
+  if (points.length === 0) {
+    return <p className="px-5 py-6 text-sm text-ink-muted">No activity in this period.</p>;
+  }
+
+  const max = Math.max(1, ...points.flatMap((point) => point.values));
+
+  return (
+    <div className="px-5 py-4">
+      <div className="flex items-center gap-5">
+        <span className="flex items-center gap-1.5 text-xs text-ink-muted">
+          <span className="size-2 rounded-sm bg-accent" aria-hidden />
+          {series[0]}
+        </span>
+        <span className="flex items-center gap-1.5 text-xs text-ink-muted">
+          <span className="size-2 rounded-sm bg-highlight" aria-hidden />
+          {series[1]}
+        </span>
+        <span className="ml-auto text-xs tabular-nums text-ink-faint">peak {formatCount(max)}</span>
+      </div>
+
+      <div className="mt-4 flex h-40 items-end gap-2 border-b border-line-strong">
+        {points.map((point) => (
+          <div key={point.key} className="flex h-full min-w-0 flex-1 items-end justify-center gap-0.5">
+            <div
+              className="w-1/2 max-w-4 rounded-t-sm bg-accent"
+              style={{ height: `${(point.values[0] / max) * 100}%` }}
+              title={`${point.label} — ${series[0]}: ${point.values[0]}`}
+            />
+            <div
+              className="w-1/2 max-w-4 rounded-t-sm bg-highlight"
+              style={{ height: `${(point.values[1] / max) * 100}%` }}
+              title={`${point.label} — ${series[1]}: ${point.values[1]}`}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-2 flex gap-2">
+        {points.map((point) => (
+          <span
+            key={point.key}
+            className="min-w-0 flex-1 truncate text-center text-[11px] text-ink-faint"
+          >
+            {point.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Panel({
   title,
   action,

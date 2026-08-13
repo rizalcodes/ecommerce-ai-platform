@@ -21,6 +21,7 @@ from app.routers import (
     sellers,
     stats,
     uploads,
+    users,
 )
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
@@ -38,6 +39,7 @@ app.include_router(auth.router)
 app.include_router(categories.router)
 app.include_router(products.router)
 app.include_router(sellers.router)
+app.include_router(users.router)
 app.include_router(stats.router)
 app.include_router(inquiries.router)
 app.include_router(uploads.router)
