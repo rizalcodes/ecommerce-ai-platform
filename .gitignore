@@ -3,7 +3,12 @@ node_modules/
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 .DS_Store
+
+# Local run logs. frontend/.gitignore covered these for the Next.js side only,
+# so a backend or root-level log could still have been staged by accident.
+*.log
 
 # Secrets: ignore every .env variant, keep only placeholder templates.
 .env
