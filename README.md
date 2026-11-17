@@ -1,47 +1,54 @@
-# 🛍️ AI Commerce Platform — Marketplace with an AI Product Assistant
+# 🔐 Secure File Sharing Platform — Enterprise-Grade File Sharing, Built From Scratch
 
-![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Python_3.12-009688?style=flat-square&logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)
-![Gemini](https://img.shields.io/badge/AI-Gemini_3.5-4285F4?style=flat-square&logo=google&logoColor=white)
+![Celery](https://img.shields.io/badge/Celery-Redis-37814A?style=flat-square&logo=celery&logoColor=white)
+![VirusTotal](https://img.shields.io/badge/Security-VirusTotal-394EFF?style=flat-square&logo=virustotal&logoColor=white)
+![Tests](https://img.shields.io/badge/Backend_Tests-412_passing-2ea44f?style=flat-square)
 ![Live](https://img.shields.io/badge/Status-Live_in_Production-2ea44f?style=flat-square)
 
-**[Live Demo →](https://ecommerce-ai-platform-seven.vercel.app)**
+**[Live Demo →](https://sharekeep.xyz)**
 
 ---
 
 ## ❓ Problem
 
-Most freelance "e-commerce website" offerings are the same three things wearing different colors: a template storefront, a cart, and a checkout form. They differentiate on price, not on what the platform actually does for the seller or the buyer — and building a cart/checkout system just to showcase design skills is a lot of effort spent proving nothing unique.
+Most "file sharing" portfolio projects are a thin wrapper around an S3 bucket: upload a file, get a link, done. That skips every problem that actually makes file sharing hard — a shared link is an open door unless something scans what comes through it, limits who can walk in, and remembers who did.
 
 ## 💡 Solution
 
-A multi-vendor marketplace that skips cart/checkout entirely and puts the effort into two things that actually differentiate: **direct buyer-seller conversion** (inquiry-based, not cart-based) and **business intelligence that works even with zero sales data**. Every dashboard metric here is a demand signal (views, inquiries) rather than a revenue figure, because there's no revenue in v1 — and that constraint became the design.
+A self-hosted Google-Drive-style platform that treats sharing as the hard problem it is: every uploaded file is scanned for malware before anyone else can touch it, every share link carries an explicit, combinable access policy (not just "on" or "off"), and every access is logged. Then it's deployed the way a real production app has to be — behind a reverse proxy, with the firewall, TLS, and spoofing protections that a "just run it on a VPS" tutorial usually skips.
 
 ---
 
 ## ✨ Features
 
-- 🏪 **Public storefront** — browse, filter (category/price/availability/sort), search across 8 independent sellers and 80 seeded products with real photography
-- 🤖 **AI Product Assistant** — a floating widget that recommends products from the live catalogue only. Retrieval-first: candidates are pulled from the database *before* the model sees anything, so it can't recommend something that doesn't exist. Budget questions get honest answers ("nothing under RM3000, cheapest is RM3499") instead of false negatives
-- 💬 **Contact Seller, not Cart** — buyers submit an inquiry (no account needed) that lands in the seller's dashboard *and* their email (Resend) *and* an in-app notification, with a WhatsApp shortcut as a fast path
-- 📊 **Two dashboards, zero fake numbers** — Seller dashboard (own products, inquiry status breakdown, most-viewed/most-inquired). Admin dashboard (platform-wide category/seller performance, weekly trends). No chart library — every bar and trend line is drawn with the brand's own color tokens so nothing defaults to library-blue
-- 🔐 **RBAC done properly** — Users → Roles → Permissions, not a flat `role` column, so adding a Moderator or Store Manager role later needs no schema change
-- 🚫 **Suspension that actually suspends** — deactivating a seller's account doesn't just block their login; it removes their listings from the catalogue, category counts, public stats, *and* the AI assistant's candidate pool — verified with before/after measurements, not assumed
+- 📁 **Full file management** — folders, versioning, per-file/folder permissions, workspace-level storage quotas, drag-and-drop chunked uploads with progress, retry, and resume
+- 🛡️ **Malware scanning on every upload** — VirusTotal integration, hash-lookup-first to conserve API quota, processed async via Celery so uploads never block on a scan
+- 🔗 **4 share-link types, combinable** — public, private (invite-only), password-protected, and time-expiring links can be mixed on the same file (e.g. password + expiring)
+- 🔑 **Auth done properly** — JWT with httpOnly cookies, Argon2id password hashing, refresh-token rotation with reuse detection (a stolen refresh token gets detected and revoked, not silently accepted)
+- 👥 **Workspaces + RBAC** — Owner/Editor/Viewer roles per workspace, invitation flow, auto-created personal workspace on signup
+- 📜 **Audit logging** — every file access, share, and permission change is logged (sign-in/out excluded on purpose, to avoid over-collecting), with real visitor IPs correctly resolved behind Cloudflare
+- 📧 **Email notifications** — Resend-powered alerts for shares, invitations, and access events
+- 🔍 **Search & tags** — find files across workspaces without digging through folders
 
 ---
 
-## 🛡️ Design Discipline
+## 🔒 Production Hardening
 
-The brief was explicit: build something that doesn't read as AI-generated. That meant auditing every screen against a checklist, not just eyeballing it:
+This wasn't "deploy and hope." Every item below was a real bug found and fixed, not a checklist copied from a blog post:
 
-| Rule | Enforcement |
+| Risk | Fix |
 |---|---|
-| No purple-pink gradients, no glassmorphism, no 3D blobs | Swept with grep across the whole codebase before shipping — found and removed a lingering `backdrop-blur` on the header |
-| Closed color palette (4 colors, no exceptions) | Every component reads from CSS tokens; zero raw hex values in any `.tsx` file |
-| WCAG AA contrast | Measured, not assumed — caught two failing greys (2.4:1, 1.4:1) and fixed them before shipping |
-| Font license checked before use | Satoshi was the first choice; its EULA turned out to prohibit self-hosting without written consent. Caught before shipping, switched to Plus Jakarta Sans (SIL OFL) |
-| No invented statistics | Every number on every page comes from a live query. The homepage trust strip counts real rows — there's no "10,000+ happy customers" |
+| Spoofed `X-Forwarded-For` bypassing per-IP rate limits | Validated trusted-proxy hop count, config shared between Caddy and the app |
+| Reverse proxy silently overwriting (not appending) the real client IP | Explicit `trusted_proxies` config in Caddy — caught after a full day of audit logs recording Cloudflare's edge IP instead of the real visitor |
+| CSRF on state-changing requests | Double-submit token with `__Host-`-prefixed cookies, rotated on sign-in/sign-out |
+| Firewall blocking outbound traffic, not just inbound | Scoped `DOCKER-USER` iptables rules to the external interface only — an unscoped rule silently broke Caddy's own Let's Encrypt renewals |
+| Open signup allowing anyone to register | Allowlist-gated signup for the public demo |
+| File downloads exposed as bare `GET` links | Moved to signed `POST` downloads |
+
+Deployed on a hardened Contabo VPS (Ubuntu 24.04) behind Cloudflare (Full-strict SSL) and Caddy (auto Let's Encrypt), with UFW + iptables restricting ports 80/443 to Cloudflare's IP ranges only, and encrypted (`age`) off-host database backups.
 
 ---
 
@@ -49,51 +56,65 @@ The brief was explicit: build something that doesn't read as AI-generated. That 
 
 | Layer | Tool | Purpose |
 |---|---|---|
-| Frontend | Next.js 16 (App Router) + TypeScript | Server-rendered storefront, client-rendered dashboards |
-| Backend | FastAPI + SQLAlchemy + Alembic | 33-endpoint REST API, RBAC, migrations |
-| Database | PostgreSQL (Supabase) | 12 tables, RBAC seed, demand/engagement schema |
-| Storage | Supabase Storage | Product images, uploaded server-side only |
-| AI | Gemini 3.5 Flash | Retrieval-grounded product recommendations |
-| Email | Resend | Inquiry notifications, own verified sending domain |
-| Auth | JWT (python-jose, bcrypt) | Stateless auth, role claim read by the route gate |
-| Deployment | Vercel (frontend) · Railway (backend) · Supabase (data) | Split hosting, connected via a Postgres connection pooler |
+| Frontend | Next.js + TypeScript | Upload UI, workspace/file browser, share management |
+| Backend | FastAPI + SQLAlchemy | REST API, auth, RBAC, share-link logic |
+| Database | PostgreSQL | Users, workspaces, files/versions, permissions, audit log |
+| Storage | Supabase Storage (S3-compatible) | File blobs, behind a swappable storage abstraction layer |
+| Background jobs | Celery + Redis | Async malware scanning, email dispatch |
+| Malware scanning | VirusTotal API | Hash-lookup-first scanning on every upload |
+| Email | Resend | Share/invitation/access notifications |
+| Reverse proxy / TLS | Caddy + Let's Encrypt | Auto-HTTPS, trusted-proxy IP resolution |
+| CDN / Edge | Cloudflare | Proxying, DNS, DDoS protection |
+| Hosting | Contabo VPS (Docker Compose) | Self-managed production deployment |
 
 ---
 
 ## 📡 Architecture
 
 ```
-Buyer / Seller / Admin (browser)
+Browser (uploader / viewer)
             │
             ▼
-   Next.js frontend (Vercel)
-   ├── Public routes — no auth
-   ├── /seller/* — role-gated by JWT claim
-   └── /admin/*  — role-gated by JWT claim
-            │  REST + JWT bearer
-            ▼
-   FastAPI backend (Railway)
-   ├── RBAC dependency — permission checked per route,
-   │   never trusts a role sent in the request body
-   ├── AI service — retrieves candidates from DB first,
-   │   then asks Gemini to choose only from that list
-   └── core/visibility.py — single definition of
-       "buyer can see this," applied everywhere so
-       a suspended seller can't leak through one path
+   Cloudflare (proxy, DNS, SSL)
             │
             ▼
-   Supabase (Postgres + Storage)
+   Caddy (reverse proxy, auto-TLS,
+          trusted X-Forwarded-For)
+            │
+            ▼
+   Next.js frontend  ◄──────┐
+            │                │ REST + JWT (httpOnly cookie)
+            ▼                │
+   FastAPI backend ──────────┘
+   ├── Auth — JWT + refresh rotation,
+   │   reuse detection
+   ├── RBAC — workspace role checked
+   │   per route
+   ├── Share-link engine — policy
+   │   resolved per link, not per file
+   └── Audit log — every access,
+       share, and permission change
+            │
+     ┌──────┴───────┐
+     ▼              ▼
+PostgreSQL     Celery worker (Redis)
+(metadata,     ├── VirusTotal scan
+ permissions,  │   (hash-lookup-first)
+ audit log)    └── Resend email
+     │
+     ▼
+Supabase Storage (file blobs)
 ```
 
-Every buyer-facing read passes through one visibility rule (`active product AND active seller`), so the catalogue, the product page, the stats strip, and the AI assistant's candidate pool can never drift out of sync with each other.
+A file isn't downloadable by anyone until it clears the scan queue — the share-link policy and the scan status are both checked on every download request, not just at upload time.
 
 ---
 
 ## ⚡ Quick Start
 
 ```bash
-git clone https://github.com/rizalcodes/ecommerce-ai-platform.git
-cd ecommerce-ai-platform
+git clone https://github.com/rizalcodes/sharekeep.git
+cd sharekeep
 ```
 
 **Backend:**
@@ -102,10 +123,15 @@ cd ecommerce-ai-platform
 cd backend
 python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt   # Windows
-cp .env.example .env                             # fill in DATABASE_URL, JWT_SECRET, etc.
+cp .env.example .env                             # fill in DATABASE_URL, JWT_SECRET, SUPABASE_*, VIRUSTOTAL_API_KEY, RESEND_API_KEY
 alembic upgrade head
-python -m scripts.seed --no-images               # or drop --no-images for real photos
 uvicorn app.main:app --reload
+```
+
+**Worker (separate terminal):**
+
+```bash
+celery -A app.worker worker --loglevel=info
 ```
 
 **Frontend:**
@@ -117,32 +143,25 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Demo accounts (seeded): `admin@aicommerce.example.com` and 8 seller accounts, all `demo-password-2026`.
-
 ---
 
 ## 📁 Project Structure
 
 ```
-ecommerce-ai-platform/
+sharekeep/
 ├── backend/
 │   ├── app/
-│   │   ├── core/            # config, security, RBAC, visibility rule
-│   │   ├── models/          # SQLAlchemy models (12 tables)
-│   │   ├── routers/         # 33 endpoints across 9 routers
-│   │   └── services/        # AI, email, storage, view tracking
-│   ├── alembic/              # schema + RBAC seed migrations
-│   └── scripts/               # seed data, admin creation
+│   │   ├── core/            # config, security, RBAC
+│   │   ├── models/           # SQLAlchemy models
+│   │   ├── routers/            # auth, files, shares, workspaces, audit
+│   │   ├── services/             # storage abstraction, VirusTotal, email
+│   │   └── worker/                 # Celery tasks (scan, notifications)
+│   └── alembic/                      # migrations
 ├── frontend/
-│   └── app/
-│       ├── (public)/           # storefront, product detail, categories, sellers
-│       ├── seller/               # dashboard, products CRUD, inquiries, profile
-│       ├── admin/                  # dashboard, analytics, users, categories
-│       └── components/               # dashboard/, product/, chatbot/, ui/
-└── PRD.md · Design.md · Architecture.md · Schema.md · Rules.md   # spec docs
+│   └── app/                            # Next.js App Router pages
+├── deploy/                               # VPS provisioning, firewall, Caddy, backups
+└── PRD.md · Schema.md · Architecture.md · Rules.md    # spec docs, locked before implementation
 ```
-
-The five spec docs are the source of truth this was built against — not written after the fact, but locked before the first line of code and referenced throughout.
 
 ---
 
@@ -156,4 +175,4 @@ The five spec docs are the source of truth this was built against — not writte
 
 ---
 
-*A cart is easy to demo. A platform that stays honest without one is the harder thing to build — and the more interesting one to show.*
+*Anyone can wire up an upload button. The harder part is making sure what comes out the other end of that link is safe, permissioned correctly, and traceable — that's what this one is actually about.*
